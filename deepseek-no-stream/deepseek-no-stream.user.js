@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         DeepSeek Chat - 禁用流式打字效果 + 防滚动 大纲 36
-// @name:en      DeepSeek Chat - Disable Streaming & Auto-Scroll 36
+// @name         DeepSeek Chat - 禁用流式打字效果 + 防滚动 大纲 38
+// @name:en      DeepSeek Chat - Disable Streaming & Auto-Scroll 38
 // @namespace    https://github.com/tampermonkey-scripts
 // @version      2.4
 // @description  禁用 AI 流式打字效果（生成完成后一次性显示）+ 生成过程中阻止页面自动滚动
@@ -38,9 +38,13 @@
   // ========================================
   let streamingCount = 0;
   let aiGenerating = false; // AI 是否正在生成
+  let scrollContainers = [];
+  let userScrollTimers = new Map();
+  let globalUserScroll = false;
+  let globalUserScrollTimer = null;
   // 立即检查停止按钮状态（不等 300ms 后首次轮询）
   (function() {
-    var btn = document.querySelector('[class*="stop"] button, button[class*="stop"], [class*="stop-generate"], [aria-label*="stop" i]');
+    var btn = document.querySelector('[class*="stop"] button, button[class*="stop"], [class*="stop-generate"], [aria-label*="stop" i], [class*="Stop"], [class*="STOP"], [class*="cancel"], [class*="pause"], [class*="generating"] button, button[class*="generating"], button[class*="send"][class*="disabled"], [class*="send"][class*="loading"]');
     if (btn && btn.offsetParent !== null) aiGenerating = true;
   })();
 
@@ -97,11 +101,72 @@
   `);
 
   // ========================================
-  // 拦截程序化滚动（流式生成时阻止 AI 自动滚动）
+  // 滚动防护（流式生成时阻止 AI 自动滚动）
   // ========================================
-  // 只拦截 scrollIntoView 和 scrollTo，不干扰用户手动滚动。
-  // 不设 scroll 事件锁，确保拖拽滚动条、触控板等所有用户交互完全正常。
+  // 综合策略：
+  // 1. 全局键盘滚动检测
+  // 2. 在每个 .ds-virtual-list 上挂载 scroll 事件锁（区分用户/程序滚动）
+  // 3. 拦截 scrollIntoView / scrollTo 作为兜底
 
+  // 全局键盘滚动检测
+  document.addEventListener("keydown", (e) => {
+    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key)) {
+      globalUserScroll = true;
+      clearTimeout(globalUserScrollTimer);
+      globalUserScrollTimer = setTimeout(() => { globalUserScroll = false; }, 400);
+    }
+  }, { passive: true });
+
+  function installScrollLock(container) {
+    if (container._scrollLockInstalled) return;
+    container._scrollLockInstalled = true;
+
+    let savedScrollTop = container.scrollTop;
+    let userScroll = false;
+
+    var markUser = function() {
+      userScroll = true;
+      clearTimeout(userScrollTimers.get(container));
+      var tid = setTimeout(function() {
+        userScroll = false;
+        userScrollTimers.delete(container);
+      }, 350);
+      userScrollTimers.set(container, tid);
+    };
+
+    container.addEventListener("wheel", markUser, { passive: true });
+    container.addEventListener("touchmove", markUser, { passive: true });
+    container.addEventListener("keydown", function(e) {
+      if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].indexOf(e.key) >= 0) {
+        markUser();
+      }
+    }, { passive: true });
+
+    // 核心：scroll 事件中区分用户/程序滚动
+    container.addEventListener("scroll", function() {
+      if (streamingCount === 0) {
+        savedScrollTop = container.scrollTop;
+        return;
+      }
+      if (userScroll || globalUserScroll) {
+        savedScrollTop = container.scrollTop;
+      } else {
+        if (container.scrollTop !== savedScrollTop) {
+          container.scrollTop = savedScrollTop;
+        }
+      }
+    }, { passive: true });
+  }
+
+  function installAllLocks() {
+    var lists = document.querySelectorAll(CONFIG.SCROLL_CONTAINER);
+    for (var i = 0; i < lists.length; i++) {
+      installScrollLock(lists[i]);
+    }
+    scrollContainers = Array.prototype.slice.call(lists);
+  }
+
+  // --- 拦截 scrollIntoView（兜底） ---
   var nativeScrollIntoView = Element.prototype.scrollIntoView;
   Element.prototype.scrollIntoView = function () {
     if (streamingCount > 0) {
@@ -110,13 +175,34 @@
     return nativeScrollIntoView.apply(this, arguments);
   };
 
-  // --- 拦截 window.scrollTo ---
+  // --- 拦截 window.scrollTo（兜底） ---
   var nativeScrollTo = window.scrollTo.bind(window);
   window.scrollTo = function () {
     if (streamingCount > 0) return;
     return nativeScrollTo.apply(window, arguments);
   };
   window.scroll = window.scrollTo;
+
+  // ========================================
+  // 生成完成后向下滚动 600px
+  // ========================================
+  function scrollAfterComplete() {
+    setTimeout(function() {
+      requestAnimationFrame(function() {
+        var containers = document.querySelectorAll(CONFIG.SCROLL_CONTAINER);
+        containers.forEach(function(c) {
+          c.scrollTop = Math.max(0, c.scrollTop + 600);
+        });
+      });
+    }, 100);
+  }
+
+  // 启动时立即安装滚动锁 + 持续监视新出现的容器
+  installAllLocks();
+  var lockObserver = new MutationObserver(installAllLocks);
+  if (document.body) {
+    lockObserver.observe(document.body, { childList: true, subtree: true });
+  }
 
 
   // ========================================
@@ -221,6 +307,13 @@
         isActive = true;
         streamingCount++;
 
+        // 在流开始前预设滚动位置（防止开始瞬间的滚动漏拦截）
+        scrollContainers.forEach(function(c) {
+          if (c._lastScrollTop === undefined) {
+            c._lastScrollTop = c.scrollTop;
+          }
+        });
+
         container.classList.add("_ds_hide");
         container.classList.remove("_ds_hide_final");
         // 流式生成时隐藏大纲
@@ -244,6 +337,9 @@
         // 更新 lastText 防止大纲插入触发 MutationObserver 误判
         lastText = container.textContent || "";
         if (streamingCount === 0) {
+          // 清除预设的滚动位置
+          scrollContainers.forEach(function(c) { c._lastScrollTop = undefined; });
+          scrollAfterComplete();
         }
       }
     }
@@ -253,14 +349,16 @@
       if (currentText === lastText) return;
       lastText = currentText;
 
-      // AI 未在生成且内容已充分 → React 虚拟列表渲染已有消息，直接显示大纲
-      if (!isActive && currentText.length > 0 && !aiGenerating) {
-        var els = insertOutline(container);
-        if (els.length > 0) container.classList.add("_ds_hide_final");
-        return;
+      if (!isActive) {
+        // 内容一次性出现（≥50字符），非流式，直接显示
+        if (currentText.length > 50) {
+          insertOutline(container);
+          container.classList.add("_ds_hide_final");
+          return;
+        }
+        // 内容逐步增长 → 标记流式生成开始
+        markStart();
       }
-
-      markStart();
 
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
@@ -307,13 +405,31 @@
   }
 
   // ========================================
+  // 通过虚拟列表新条目检测 AI 开始生成
+  // ========================================
+  let _lastItemCount = 0;
+  setInterval(function() {
+    var items = document.querySelectorAll('[data-virtual-list-item-key]');
+    var n = items.length;
+    if (n > _lastItemCount) {
+      // 新条目出现 → 可能已发送消息
+      aiGenerating = true;
+    }
+    _lastItemCount = n;
+  }, 500);
+
+  // ========================================
   // 监听"停止生成"按钮 → 强制完成
   // ========================================
   (function watchStopButton() {
     let wasVisible = false;
     setInterval(() => {
       const btn = document.querySelector(
-        '[class*="stop"] button, button[class*="stop"], [class*="stop-generate"], [aria-label*="stop" i]'
+        '[class*="stop"] button, button[class*="stop"], [class*="stop-generate"], [aria-label*="stop" i], ' +
+        '[class*="Stop"], [class*="STOP"], [class*="cancel"], [class*="pause"], [data-testid*="stop"], ' +
+        '[class*="generating"] button, button[class*="generating"], ' +
+        'button[class*="send"][class*="disabled"], [class*="send"][class*="loading"], ' +
+        '[class*="ds-icon-button"] svg[class*="x-mark"], [class*="ds-icon-button"] svg[class*="close"]'
       );
       if (btn && btn.offsetParent !== null) {
         wasVisible = true;
@@ -327,6 +443,7 @@
           el.classList.add("_ds_hide_final");
         });
         streamingCount = 0;
+        scrollAfterComplete();
       }
     }, 300);
   })();
