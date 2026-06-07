@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         DeepSeek Chat - 禁用流式打字效果 + 防滚动 大纲 38
-// @name:en      DeepSeek Chat - Disable Streaming & Auto-Scroll 38
+// @name         DeepSeek Chat - 禁用流式打字效果 + 快捷键复制 + 显示大纲 39
+// @name:en      DeepSeek Chat - Disable Streaming & Auto-Scroll 39
 // @namespace    https://github.com/tampermonkey-scripts
-// @version      2.4
+// @version      2.5
 // @description  禁用 AI 流式打字效果（生成完成后一次性显示）+ 生成过程中阻止页面自动滚动
-// @author       You
+// @author       linfeng365
 // @match        https://chat.deepseek.com/*
 // @icon         https://chat.deepseek.com/favicon.ico
 // @grant        GM_addStyle
@@ -451,9 +451,10 @@
   // ========================================
   // 复制时包含大纲
   // ========================================
-  // 记录最后一次点击的消息容器（带大纲的）
+  // 记录最后一次点击的消息容器（带大纲的）和提问
   document.addEventListener("click", function(e) {
     document._ds_lastCopyContainer = null;
+    document._ds_lastQuestionText = "";
     // 从点击目标向上找包含 AI 回复的容器
     var itemEl = e.target.closest('[data-virtual-list-item-key]');
     if (!itemEl) return;
@@ -461,6 +462,14 @@
     // 有 _ds_outline 元素或至少有 2 个标题就算
     if (c && (c.querySelector("._ds_outline") || c.querySelectorAll("h1,h2,h3,h4,h5,h6").length >= 2)) {
       document._ds_lastCopyContainer = c;
+      // 找前一条提问
+      var prev = itemEl.previousElementSibling;
+      while (prev && !prev.hasAttribute('data-virtual-list-item-key')) {
+        prev = prev.previousElementSibling;
+      }
+      if (prev && !prev.querySelector('[class*="ds-assistant"], [class*="ds-markdown"]')) {
+        document._ds_lastQuestionText = (prev.textContent || '').trim();
+      }
     }
   }, true);
 
@@ -469,6 +478,9 @@
   var _clipInject = document.createElement("script");
   _clipInject.textContent = `
 (function(){
+  function _dsQuestionText(){
+    return document._ds_lastQuestionText || "";
+  }
   function _dsOutlineText(){
     var c=document._ds_lastCopyContainer;
     if(!c)return"";
@@ -493,22 +505,28 @@
     }
     return lines.join("\\n");
   }
+  function _dsBuildCopy(text) {
+    var parts = [];
+    var q = _dsQuestionText();
+    if (q) parts.push("# " + q);
+    var o = _dsOutlineText();
+    if (o) parts.push(o);
+    if (text && text.indexOf("大纲") === -1) parts.push(text);
+    else if (text) parts.push(text);
+    return parts.join("\\n\\n");
+  }
   var _ot,_ow,_ow2;
   // writeText 拦截
   if(navigator.clipboard&&navigator.clipboard.writeText){
     _ow=navigator.clipboard.writeText.bind(navigator.clipboard);
     navigator.clipboard.writeText=function(t){
-      _ot=_dsOutlineText();
-      if(_ot&&t.indexOf("大纲")===-1)t=_ot+"\\n\\n"+t;
-      return _ow(t);
+      return _ow(_dsBuildCopy(t));
     };
   }
   // write 拦截
   if(navigator.clipboard&&navigator.clipboard.write){
     _ow2=navigator.clipboard.write.bind(navigator.clipboard);
     navigator.clipboard.write=function(items){
-      _ot=_dsOutlineText();
-      if(!_ot)return _ow2(items);
       var resolved=Array.from(items).map(function(item){
         if(!item||!item.types)return Promise.resolve(item);
         var entries=[];
@@ -516,8 +534,7 @@
           return item.getType(type).then(function(blob){
             if(type==="text/plain"||type==="text/html"){
               return blob.text().then(function(text){
-                if(text.indexOf("大纲")===-1)text=_ot+"\\n\\n"+text;
-                entries.push([type,new Blob([text],{type:type})]);
+                entries.push([type,new Blob([_dsBuildCopy(text)],{type:type})]);
               });
             }else{
               entries.push([type,blob]);
@@ -554,6 +571,15 @@
       var mdEl = lastAssistant.querySelector(CONFIG.MD_CONTENT);
       if (mdEl) {
         document._ds_lastCopyContainer = mdEl;
+        // 找前一条提问
+        document._ds_lastQuestionText = "";
+        var prev = lastAssistant.previousElementSibling;
+        while (prev && !prev.hasAttribute('data-virtual-list-item-key')) {
+          prev = prev.previousElementSibling;
+        }
+        if (prev && !prev.querySelector('[class*="ds-assistant"], [class*="ds-markdown"]')) {
+          document._ds_lastQuestionText = (prev.textContent || '').trim();
+        }
         // 用 SVG path 找到复制按钮并点击
         var btn = lastAssistant.querySelector('div[role="button"] svg path');
         if (btn) btn = btn.closest('div[role="button"]');
