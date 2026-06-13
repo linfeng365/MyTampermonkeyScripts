@@ -108,6 +108,14 @@
   --h5-color: #2E8B6F;
   --h6-color: #2E8B6F;
 
+  /* 编辑模式标题前的 #；默认与各级标题正文同色，可单独改成其他颜色。 */
+  --md-h1-formatting-color: var(--h1-color);
+  --md-h2-formatting-color: var(--h2-color);
+  --md-h3-formatting-color: var(--h3-color);
+  --md-h4-formatting-color: var(--h4-color);
+  --md-h5-formatting-color: var(--h5-color);
+  --md-h6-formatting-color: var(--h6-color);
+
   /*4DCAA4，3AB38F，349F7E，2E8B6F*/
 
   --h1-weight: 700;  /* 可用范围通常为 100-900 */
@@ -117,7 +125,7 @@
   --h5-weight: 600;
   --h6-weight: 600;
 
-  --heading-formatting: var(--md-formatting-color); /* 编辑模式中的 # */
+  --heading-formatting: var(--md-formatting-color); /* 无法识别标题级别时的 # 回退颜色 */
   --inline-title-color: var(--h1-color);            /* 文档顶部文件标题 */
   --inline-title-size: var(--h1-size);
 
@@ -446,9 +454,34 @@ del,
   color: var(--md-highlight-color);
 }
 
-/* 标题前的 #。 */
+/* 标题前的 #：通用回退颜色。 */
 .cm-s-obsidian span.cm-formatting-header {
   color: var(--heading-formatting);
+}
+
+/* H1-H6 的 # 分别跟随对应标题颜色，也可通过变量独立调节。 */
+.cm-s-obsidian .HyperMD-header-1 span.cm-formatting-header {
+  color: var(--md-h1-formatting-color);
+}
+
+.cm-s-obsidian .HyperMD-header-2 span.cm-formatting-header {
+  color: var(--md-h2-formatting-color);
+}
+
+.cm-s-obsidian .HyperMD-header-3 span.cm-formatting-header {
+  color: var(--md-h3-formatting-color);
+}
+
+.cm-s-obsidian .HyperMD-header-4 span.cm-formatting-header {
+  color: var(--md-h4-formatting-color);
+}
+
+.cm-s-obsidian .HyperMD-header-5 span.cm-formatting-header {
+  color: var(--md-h5-formatting-color);
+}
+
+.cm-s-obsidian .HyperMD-header-6 span.cm-formatting-header {
+  color: var(--md-h6-formatting-color);
 }
 
 /* 引用前的 >。 */
