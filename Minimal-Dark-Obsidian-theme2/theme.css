@@ -1,0 +1,527 @@
+/* ========================================================================== *
+ * Obsidian 主题：Minimal-Dark-Coder（整理优化版）
+ * 适用版本：Obsidian 1.12.7
+ * 最后更新：2026-06-13 Codex 优化2
+ *
+ * 使用说明：
+ * 1. 常用调节项全部集中在 .theme-dark 中。
+ * 2. 优先使用 Obsidian 原生 CSS 变量，减少选择器冲突。
+ * 3. 修改色值、字号或间距后，重新加载主题或 CSS snippet。
+ * ========================================================================== */
+
+.theme-dark {
+  /* ========================================================================
+   * 1. 基础配色
+   * ======================================================================== */
+
+  --background-primary: #1A1A1A;        /* 编辑区主背景 */
+  --background-primary-alt: #202020;    /* 代码、嵌入等次级背景 */
+  --background-secondary: #1A1A1A;      /* 左右侧边栏背景 */
+  --background-secondary-alt: #202020;  /* 弹窗、面板备用背景 */
+
+
+  --text-normal: #ABABAB;  /* 正文 */
+  --text-muted: #8A8A8A;   /* 次要文字 */
+  --text-faint: #6A6A6A;   /* Markdown 标记、弱提示 */
+
+  --text-accent: #3AB38F;        /* 通用强调色 */
+  --text-accent-hover: #4DCAA4;  /* 通用悬停强调色 */
+  --text-selection: #2A5A4A;     /* 文字选中背景 */
+  --caret-color: #D5D5D5;        /* 编辑光标 */
+
+  /* 自定义调节变量：下方 Markdown 样式会引用这些值。 */
+  --md-formatting-color: #6A6A6A;   /* **、_、~~、[]、()、$ 等语法符号 */
+  --md-bold-color: #2E8B6F;         /* **粗体** */
+  --md-italic-color: #D5D5D5;       /* *斜体* */
+  --md-bold-italic-color: #DCA3A3;  /* ***粗斜体*** */
+  --md-strike-color: #8A8A8A;       /* ~~删除线~~ */
+  --md-highlight-color: #D5D5D5;    /* ==高亮文字== 的文字 */
+  --md-highlight-bg: #2A5A4A;       /* ==高亮文字== 的背景 */
+  --md-comment-color: #6A6A6A;      /* %%注释%% 与代码注释 */
+  --md-math-color: #4DCAA4;         /* $数学公式$ */
+  --md-frontmatter-color: #8A8A8A;  /* YAML 属性源码 */
+
+
+
+  /* ========================================================================
+   * 2. 正文、行距与段落
+   * ======================================================================== */
+
+  /*
+   * 正文文字大小：
+   * - --font-text-size 是 Obsidian 全局回退值。
+   * - editing 控制源码模式和 Live Preview。
+   * - reading 控制阅读模式。
+   * 常用范围：14px-20px；标题使用 em，会随对应模式的正文同比例变化。
+   */
+  --font-text-size: 16px;
+  --md-font-size-editing: 16px;
+  --md-font-size-reading: 14px;
+
+  --md-line-height-editing: 1.6;  /* 编辑模式行距，建议 1.5-2.0 */
+  --md-line-height-reading: 1.8;  /* 阅读模式行距，建议 1.5-1.9 */
+  --p-spacing: 0.75em;            /* 阅读/实时预览段落间距 */
+  --file-line-width: 750px;       /* 开启“缩减栏宽”后的正文宽度 */
+  --file-margins: 16px;           /* 编辑区四周留白，可改为 16px 或 24px */
+
+
+  /* ========================================================================
+   * 3. 标题 H1-H6
+   * 数值越大标题越大；1em 等于正文大小。
+   * ======================================================================== */
+
+  --h1-size: 1.4em;  /* # 一级标题 */
+  --h2-size: 1.2em;  /* ## 二级标题 */
+  --h3-size: 1.1em;  /* ### 三级标题 */
+  --h4-size: 1em;  /* #### 四级标题 */
+  --h5-size: 1em;  /* ##### 五级标题 */
+  --h6-size: 1em;      /* ###### 六级标题 */
+
+  /*
+   * 标题段前/段后距离：
+   * - before = 标题上方距离（段前）
+   * - after  = 标题下方到下一段正文的距离（段后）
+   * - rem 不受标题字号影响；数值越大，空白越大；0 表示取消空白。
+   * - 先改下面两个总变量，可统一调整全部标题。
+   */
+  --md-heading-before: 1.1rem;
+  --md-heading-after: 0.5rem;
+
+  /* H1-H6 独立设置；需要单独调整时，把 var(...) 改成具体数值。 */
+  --md-h1-before: var(--md-heading-before);
+  --md-h1-after: var(--md-heading-after);
+  --md-h2-before: var(--md-heading-before);
+  --md-h2-after: var(--md-heading-after);
+  --md-h3-before: var(--md-heading-before);
+  --md-h3-after: var(--md-heading-after);
+  --md-h4-before: var(--md-heading-before);
+  --md-h4-after: var(--md-heading-after);
+  --md-h5-before: var(--md-heading-before);
+  --md-h5-after: var(--md-heading-after);
+  --md-h6-before: var(--md-heading-before);
+  --md-h6-after: var(--md-heading-after);
+
+  --h1-color: #3AB38F;
+  --h2-color: #349F7E;
+  --h3-color: #2E8B6F;
+  --h4-color: #2E8B6F;
+  --h5-color: #2E8B6F;
+  --h6-color: #2E8B6F;
+
+  /*4DCAA4，3AB38F，349F7E，2E8B6F*/
+
+  --h1-weight: 700;  /* 可用范围通常为 100-900 */
+  --h2-weight: 600;
+  --h3-weight: 600;
+  --h4-weight: 600;
+  --h5-weight: 600;
+  --h6-weight: 600;
+
+  --heading-formatting: var(--md-formatting-color); /* 编辑模式中的 # */
+  --inline-title-color: var(--h1-color);            /* 文档顶部文件标题 */
+  --inline-title-size: var(--h1-size);
+
+  /* ========================================================================
+   * 4. 粗体、斜体、删除线与高亮
+   * ======================================================================== */
+
+  --bold-color: var(--md-bold-color);
+  --bold-modifier: 200; /* 编辑模式：正文 400 + 200 = 粗体 600 */
+  --bold-weight: 600;
+  --italic-color: var(--md-italic-color);
+  --italic-weight: inherit;
+  --text-highlight-bg: var(--md-highlight-bg);
+
+  /* ========================================================================
+   * 5. 链接与嵌入 
+   * ======================================================================== */
+
+  --link-color: #2E8B6F;                 /* [[内部链接]] */
+  --link-color-hover: #3AB38F;
+  --link-external-color: #2E8B6F;        /* [外部链接](URL) */
+  --link-external-color-hover: #3AB38F;
+  --link-unresolved-color: #8A8A8A;      /* 尚不存在的内部链接 */
+  --link-unresolved-opacity: 0.7;
+  --link-decoration: none;
+  --link-decoration-hover: underline;
+  --link-external-decoration: none;
+  --link-external-decoration-hover: underline;
+
+  --embed-border-start: 2px solid #3AC198; /* ![[嵌入内容]] 左边线 */
+  --embed-background: transparent;
+
+  /* 65B3F6浅蓝,349F7E，3AB38F,349F7E,2E8B6F */
+
+
+  /* ========================================================================
+   * 6. 引用、列表与任务
+   * ======================================================================== */
+
+  --blockquote-border-color: #3AC198;  /* > 引用左边线 */
+  --blockquote-border-thickness: 2px;
+  --blockquote-color: #D5D5D5;
+  --blockquote-background-color: transparent;
+  --blockquote-font-style: normal;
+
+  --list-marker-color: #3AC198;            /* -、*、+、1. */
+  --list-marker-color-hover: #4DCAA4;
+  --list-marker-color-collapsed: #3AC198;
+  --list-bullet-size: 0.3em;
+  --list-spacing: 0.075em;
+  --list-indent: 2.25em;
+  --list-numbered-style: decimal; /* 可改为 lower-alpha、upper-roman 等 */
+
+  --checkbox-color: #3AC198;               /* 已勾选任务框 */
+  --checkbox-color-hover: #4DCAA4;
+  --checkbox-border-color: #6A6A6A;        /* 未勾选任务框 */
+  --checkbox-border-color-hover: #8A8A8A;
+  --checkbox-marker-color: #1A1A1A;
+  --checklist-done-color: #6A6A6A;
+  --checklist-done-decoration: line-through;
+
+  /* ========================================================================
+   * 7. 行内代码与代码块
+   * ======================================================================== */
+
+  --code-background: #252525;
+  --code-normal: #4DCAA4;
+  --code-comment: var(--md-comment-color);
+  --code-radius: 4px;
+  --code-size: 0.875em;
+  --code-border-width: 0px;
+
+  /* 代码语法高亮，可按需要逐项修改。 */
+  --code-function: #DCDCAA;
+  --code-important: #FFB347;
+  --code-keyword: #C586C0;
+  --code-operator: #D4D4D4;
+  --code-property: #9CDCFE;
+  --code-punctuation: #8A8A8A;
+  --code-string: #CE9178;
+  --code-tag: #569CD6;
+  --code-value: #B5CEA8;
+
+  /* ========================================================================
+   * 8. 标签、分隔线、表格与脚注
+   * ======================================================================== */
+
+  --tag-color: #3AC198;                  /* #标签 */
+  --tag-color-hover: #4DCAA4;
+  --tag-background: rgba(58, 193, 152, 0.10);
+  --tag-background-hover: rgba(58, 193, 152, 0.18);
+  --tag-border-color: rgba(58, 193, 152, 0.20);
+  --tag-border-color-hover: rgba(58, 193, 152, 0.35);
+  --tag-border-width: 1px;
+  --tag-radius: 2em;
+  --tag-size: 0.875em;
+
+  --hr-color: #3A3E42;  /* --- 或 *** 分隔线 */
+  --hr-thickness: 1px;
+
+  --table-background: transparent;
+  --table-border-color: #3A3E42;
+  --table-border-width: 1px;
+  --table-header-background: #202020;
+  --table-header-color: #D5D5D5;
+  --table-header-weight: 600;
+  --table-text-size: 1em;
+  --table-header-size: 1em;
+  --table-row-alt-background: rgba(255, 255, 255, 0.02);
+  --table-row-background-hover: rgba(58, 193, 152, 0.06);
+
+  --footnote-id-color: #65B3F6;            /* [^1] 脚注编号 */
+  --footnote-id-color-no-occurrences: #6A6A6A;
+  --footnote-size: 0.875em;
+
+  /* ========================================================================
+   * 9. Callout 与界面元素
+   * ======================================================================== */
+
+  --callout-border-width: 0px;   /* 改为 1px 可显示 Callout 边框 */
+  --callout-radius: 6px;
+  --callout-title-size: inherit;
+  --callout-title-weight: 600;
+
+  --tab-text-color: #D5D5D5;
+  --tab-text-color-active: #E4E4E4;
+  --tab-text-color-focused-active: #E4E4E4;
+  --tab-text-color-focused-active-current: #E4E4E4;
+
+  --graph-text: #ABABAB;
+  --graph-line: #3AB38F;
+  --graph-node: #3AB38F;
+  --graph-node-unresolved: #6A6A6A;
+  --graph-node-focused: #4DCAA4;
+
+  /* 滚动条 */
+  --md-scrollbar-track: #1A1A1A;
+  --md-scrollbar-thumb: #3A3E42;
+  --md-scrollbar-thumb-hover: #3AB38F;
+}
+
+/* ========================================================================== *
+ * 10. 字体（可选）
+ * 删除下方注释符号后启用。不要在外层注释中再嵌套行内注释。
+ * ========================================================================== */
+
+/*
+body {
+  --font-default: "Inter", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-monospace: "Fira Code", "JetBrains Mono", monospace;
+}
+*/
+
+/* ========================================================================== *
+ * 11. 正文排版
+ * ========================================================================== */
+
+.markdown-source-view {
+  font-size: var(--md-font-size-editing);
+}
+
+.markdown-source-view.mod-cm6 .cm-scroller {
+  line-height: var(--md-line-height-editing);
+}
+
+.markdown-preview-view {
+  font-size: var(--md-font-size-reading);
+  line-height: var(--md-line-height-reading);
+}
+
+/* ========================================================================== *
+ * 12. 标题段前与段后距离
+ * 同时覆盖阅读模式、Live Preview 和源码模式。
+ * ========================================================================== */
+
+/* 阅读模式：分别设置 H1-H6 的段前和段后。 */
+.markdown-rendered h1 {
+  margin-block-start: var(--md-h1-before);
+  margin-block-end: var(--md-h1-after);
+}
+
+.markdown-rendered h2 {
+  margin-block-start: var(--md-h2-before);
+  margin-block-end: var(--md-h2-after);
+}
+
+.markdown-rendered h3 {
+  margin-block-start: var(--md-h3-before);
+  margin-block-end: var(--md-h3-after);
+}
+
+.markdown-rendered h4 {
+  margin-block-start: var(--md-h4-before);
+  margin-block-end: var(--md-h4-after);
+}
+
+.markdown-rendered h5 {
+  margin-block-start: var(--md-h5-before);
+  margin-block-end: var(--md-h5-after);
+}
+
+.markdown-rendered h6 {
+  margin-block-start: var(--md-h6-before);
+  margin-block-end: var(--md-h6-after);
+}
+
+/* 覆盖 Obsidian 对“正文、列表或表格之后的标题”设置的额外段前距离。 */
+.markdown-rendered :is(p, pre, table, ul, ol) + h1,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h1 {
+  margin-top: var(--md-h1-before);
+}
+
+.markdown-rendered :is(p, pre, table, ul, ol) + h2,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h2 {
+  margin-top: var(--md-h2-before);
+}
+
+.markdown-rendered :is(p, pre, table, ul, ol) + h3,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h3 {
+  margin-top: var(--md-h3-before);
+}
+
+.markdown-rendered :is(p, pre, table, ul, ol) + h4,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h4 {
+  margin-top: var(--md-h4-before);
+}
+
+.markdown-rendered :is(p, pre, table, ul, ol) + h5,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h5 {
+  margin-top: var(--md-h5-before);
+}
+
+.markdown-rendered :is(p, pre, table, ul, ol) + h6,
+.markdown-rendered div:is(.el-p, .el-pre, .el-table, .el-ul, .el-ol) + div > h6 {
+  margin-top: var(--md-h6-before);
+}
+
+/* Live Preview 与源码模式：标题行使用 padding，避免行布局塌陷。 */
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-1 {
+  padding-block-start: var(--md-h1-before);
+  padding-block-end: var(--md-h1-after);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-2 {
+  padding-block-start: var(--md-h2-before);
+  padding-block-end: var(--md-h2-after);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-3 {
+  padding-block-start: var(--md-h3-before);
+  padding-block-end: var(--md-h3-after);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-4 {
+  padding-block-start: var(--md-h4-before);
+  padding-block-end: var(--md-h4-after);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-5 {
+  padding-block-start: var(--md-h5-before);
+  padding-block-end: var(--md-h5-after);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-header-6 {
+  padding-block-start: var(--md-h6-before);
+  padding-block-end: var(--md-h6-after);
+}
+
+/* ========================================================================== *
+ * 13. Markdown 常用标记
+ * 这些规则主要控制编辑模式中可见的 Markdown 语法符号。
+ * 阅读模式中的内容样式优先由上方 Obsidian 原生变量控制。
+ * ========================================================================== */
+
+/* 通用语法符号：**、*、~~、==、`、[]、()、!、$。 */
+.cm-s-obsidian span.cm-formatting-strong,
+.cm-s-obsidian span.cm-formatting-em,
+.cm-s-obsidian span.cm-formatting-strikethrough,
+.cm-s-obsidian span.cm-formatting-highlight,
+.cm-s-obsidian span.cm-formatting-code,
+.cm-s-obsidian span.cm-formatting-link,
+.cm-s-obsidian span.cm-formatting-link-string,
+.cm-s-obsidian span.cm-formatting-image,
+.cm-s-obsidian span.cm-formatting-math,
+.cm-s-obsidian span.cm-formatting-task,
+.cm-s-obsidian span.cm-formatting-escape,
+.cm-s-obsidian span.cm-hmd-escape-backslash {
+  color: var(--md-formatting-color);
+}
+
+/* 粗斜体：同时兼容阅读模式和 CodeMirror 编辑模式。 */
+strong em,
+em strong,
+.cm-s-obsidian span.cm-strong.cm-em {
+  color: var(--md-bold-italic-color);
+  font-weight: 700;
+  font-style: italic;
+}
+
+/*
+ * 引用中的粗体：
+ * Obsidian 的 .cm-quote 颜色优先级高于 .cm-strong，需在这里明确覆盖。
+ * 不包含 ** 标记本身，标记仍使用 --md-formatting-color。
+ */
+.cm-s-obsidian span.cm-quote.cm-strong:not(.cm-formatting-strong),
+.markdown-rendered blockquote strong {
+  color: var(--md-bold-color);
+}
+
+/* 引用中的粗斜体优先使用粗斜体颜色。 */
+.cm-s-obsidian span.cm-quote.cm-strong.cm-em:not(.cm-formatting-strong):not(.cm-formatting-em),
+.markdown-rendered blockquote strong em,
+.markdown-rendered blockquote em strong {
+  color: var(--md-bold-italic-color);
+}
+
+/* 删除线文字；~~ 符号仍使用 --md-formatting-color。 */
+del,
+.cm-s-obsidian span.cm-strikethrough:not(.cm-formatting-strikethrough) {
+  color: var(--md-strike-color);
+}
+
+/* 高亮文字颜色；背景由 --md-highlight-bg 控制。 */
+.markdown-rendered mark,
+.cm-s-obsidian span.cm-highlight:not(.cm-formatting-highlight) {
+  color: var(--md-highlight-color);
+}
+
+/* 标题前的 #。 */
+.cm-s-obsidian span.cm-formatting-header {
+  color: var(--heading-formatting);
+}
+
+/* 引用前的 >。 */
+.cm-s-obsidian span.cm-formatting-quote {
+  color: var(--blockquote-border-color);
+}
+
+/* 无序列表符号和有序列表序号。 */
+.cm-s-obsidian span.cm-formatting-list {
+  color: var(--list-marker-color);
+}
+
+/* 行内代码两侧的反引号。 */
+.cm-s-obsidian span.cm-formatting-code {
+  color: var(--md-formatting-color);
+}
+
+/* 数学公式正文与 $、$$ 标记。 */
+.cm-s-obsidian span.cm-math:not(.cm-formatting-math),
+.markdown-rendered .math {
+  color: var(--md-math-color);
+}
+
+.cm-s-obsidian span.cm-formatting-math {
+  color: var(--md-formatting-color);
+}
+
+/* %%注释%%、HTML 注释和代码注释。 */
+.cm-s-obsidian span.cm-comment {
+  color: var(--md-comment-color);
+}
+
+/* YAML 属性源码。 */
+.cm-s-obsidian span.cm-hmd-frontmatter {
+  color: var(--md-frontmatter-color);
+}
+
+/* 表格中的 | 和表头分隔行。 */
+.cm-s-obsidian .HyperMD-table-row span.cm-hmd-table-sep,
+.cm-s-obsidian .HyperMD-table-row-1 {
+  color: var(--table-border-color);
+}
+
+/* 脚注与块 ID 标记。 */
+.cm-s-obsidian span.cm-footref,
+.cm-s-obsidian span.cm-blockid,
+.markdown-rendered .footnote-link {
+  color: var(--footnote-id-color);
+}
+
+/* 水平分隔线在源码模式中的 ---、***、___。 */
+.cm-s-obsidian .HyperMD-hr {
+  color: var(--hr-color);
+}
+
+/* ========================================================================== *
+ * 14. 细节与界面
+ * ========================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--md-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-scrollbar-thumb-hover);
+}
